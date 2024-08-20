@@ -1,33 +1,50 @@
 
-import 'package:flutter/material.dart';
-import 'package:to_do_app_c11/ui/common/AppFormField.dart';
-import 'package:to_do_app_c11/ui/login/LoginScreen.dart';
+import 'dart:async';
+import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_app_c11/ui/FirebaseAuthCodes.dart';
+import 'package:to_do_app_c11/ui/common/AppFormField.dart';
+import 'package:to_do_app_c11/ui/home/home_screen.dart';
+import 'package:to_do_app_c11/ui/login/LoginScreen.dart';
+import 'package:to_do_app_c11/ui/register/Dialog_utilities.dart';
+
+import '../../providers/appAuthProvider.dart';
 import '../ValidationUtilities.dart';
 import '../utilities.dart';
 
 
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   RegisterScreen({super.key});
 
   static const String routeName="Register Screen";
 
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController userFullName=TextEditingController();
+
   TextEditingController userPhoneNumber=TextEditingController();
+
   TextEditingController userEmailAddress=TextEditingController();
+
   TextEditingController userPassword=TextEditingController();
+
   TextEditingController userPasswordConfirmation=TextEditingController();
 
   GlobalKey<FormState> formKey =GlobalKey<FormState>();
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.routeMainColor,
       body: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
 
         child: SingleChildScrollView(
           child: Form(
@@ -35,7 +52,7 @@ class RegisterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: 40,),
+                const SizedBox(height: 40,),
                 Image.asset(getImagePath('route_logo.png'),
                 width: double.infinity,
                 ),
@@ -90,7 +107,7 @@ class RegisterScreen extends StatelessWidget {
                         return "please enter your password";
                       }
                       if(!isValidPassword(text!)) {
-                        return "please enter valid Password";
+                      return "please enter valid Password";
                       }
                       return null;
                     },
@@ -111,14 +128,14 @@ class RegisterScreen extends StatelessWidget {
                     },
                   userController:userPasswordConfirmation,
                 ),
-                SizedBox(height: 24,),
+                const SizedBox(height: 24,),
                 ElevatedButton(
 
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)
                       ),
-                      padding: EdgeInsets.symmetric(vertical: 18),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
                       backgroundColor:Colors.white,
                     ),
                     onPressed: (){
@@ -156,7 +173,58 @@ class RegisterScreen extends StatelessWidget {
   }
 
   void registerCheck(){
+    showMessageDialog(context,message: 'Registering',postButtonTitle: "ok",
+    postButtonAction: (){
+      Navigator.pushNamed(context, HomeScreen.routeName);
+    });
+
+    showLoadingDialog(context, message:"please wait");
+
     // validate form
-    formKey.currentState?.validate();
+    if(formKey.currentState?.validate()==false)
+     { return;}
+    createAccount();
+
+  }
+
+  void createAccount() async {
+ var myAuthProvider= Provider.of<appAuthProvider>(context,listen: false);
+    try {
+      showLoadingDialog(context, message: 'please wait....');
+final credential=await myAuthProvider.createUserWithEmailAndPassword(userEmailAddress.text, userPassword.text);
+      hideLoading(context);
+     showMessageDialog(context, message:'User created successfully',
+     postButtonTitle: 'ok',
+     postButtonAction: (){
+       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+     }
+     );
+    } on FirebaseAuthException catch (e) {
+      String message ='Something went wrong';
+
+      if (e.code == FirebaseAuthCodes.WEAK_PASSWORD) {
+        message='The password provided is too weak.';
+      } else if (e.code == FirebaseAuthCodes.EMAIL_IN_USE) {
+        message='The account already exists for that email.';
+      }
+      hideLoading(context);
+      showMessageDialog(context, message: message,postButtonTitle: 'ok');
+    } on TimeoutException catch (e){
+      String message ='No internet connection';
+      hideLoading(context);
+      showMessageDialog(context, message: message,postButtonTitle: 'check connection');
+    }catch (e) {
+      String message ='Something went wrong';
+
+     // e is TimeoutException -> wifi without internet
+      // e is IOException -> no network
+      hideLoading(context);
+      showMessageDialog(context, message: message,postButtonTitle: 'try again',
+      postButtonAction: (){
+        registerCheck();
+      }
+      );
+
+    }
   }
 }
