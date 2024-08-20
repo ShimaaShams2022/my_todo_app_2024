@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app_c11/providers/appAuthProvider.dart';
+import 'package:to_do_app_c11/ui/home/settings/AddTaskBottomSheet.dart';
 import 'package:to_do_app_c11/ui/home/settings/SettingsTab.dart';
 import 'package:to_do_app_c11/ui/login/LoginScreen.dart';
 
@@ -48,7 +49,9 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 4
             )
           ),
-          onPressed: (){},
+          onPressed: (){
+            showAddTaskBottomSheet();
+          },
           child: Icon(Icons.add),
         ),
 
@@ -71,5 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       body: tabs[selectedTabIndex],
     );
+  }
+
+  void showAddTaskBottomSheet() {
+    showModalBottomSheet(context: context, builder: (buildContext){
+      return AddTaskBottomSheet();
+    });
   }
 }
