@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_app_c11/providers/appAuthProvider.dart';
 import 'package:to_do_app_c11/ui/home/settings/SettingsTab.dart';
+import 'package:to_do_app_c11/ui/login/LoginScreen.dart';
 
 import 'list/task_list_tab.dart';
 
@@ -24,9 +27,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var provider=Provider.of<appAuthProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text("To Do App"),
+        actions: [
+          InkWell(
+              onTap: (){
+                provider.logout();
+                Navigator.pushReplacementNamed(context,LoginScreen.routeName);
+              },
+              child: Icon(Icons.logout))
+        ],
       ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
