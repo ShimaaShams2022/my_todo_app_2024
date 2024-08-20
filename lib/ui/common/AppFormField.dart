@@ -1,4 +1,4 @@
-import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 
 typedef Validator = String? Function(String? text);
@@ -44,7 +44,7 @@ class _AppFormFieldState extends State<AppFormField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin:EdgeInsets.symmetric(vertical: 12) ,
+      margin:const EdgeInsets.symmetric(vertical: 12) ,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -56,7 +56,7 @@ class _AppFormFieldState extends State<AppFormField> {
           TextFormField(
             validator: widget.myValidator,
             decoration: InputDecoration(
-              errorStyle: TextStyle(
+              errorStyle: const TextStyle(
                 color: Colors.red,
                 fontSize: 16,
               ),

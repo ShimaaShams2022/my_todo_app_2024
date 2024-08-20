@@ -136,8 +136,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       showLoadingDialog(context, message: 'please wait....');
-      final credential=await myAuthProvider.signInWithEmailAndPassword(userEmailAddress.text, userPassword.text);
+      final appUser=await myAuthProvider.signInWithEmailAndPassword(userEmailAddress.text, userPassword.text);
       hideLoading(context);
+
+      if(appUser==null){
+
+        showMessageDialog(context, message:'Something went wrong',
+            postButtonTitle: 'try again',
+            postButtonAction: (){
+              signInAccount();
+            });
+        return;
+      }
+
       showMessageDialog(context, message:'Logged in successfully',
           postButtonTitle: 'ok',
           postButtonAction: (){

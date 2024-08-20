@@ -1,6 +1,5 @@
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -175,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void registerCheck(){
     showMessageDialog(context,message: 'Registering',postButtonTitle: "ok",
     postButtonAction: (){
-      Navigator.pushNamed(context, HomeScreen.routeName);
+      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     });
 
     showLoadingDialog(context, message:"please wait");
@@ -191,8 +190,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
  var myAuthProvider= Provider.of<appAuthProvider>(context,listen: false);
     try {
       showLoadingDialog(context, message: 'please wait....');
-final credential=await myAuthProvider.createUserWithEmailAndPassword(userEmailAddress.text, userPassword.text);
-      hideLoading(context);
+final appUser=await myAuthProvider.createUserWithEmailAndPassword(
+    userEmailAddress.text,
+    userPassword.text,
+    userFullName.text);
+hideLoading(context);
+
+if(appUser==null){
+
+  showMessageDialog(context, message:'Something went wrong',
+      postButtonTitle: 'try again',
+      postButtonAction: (){
+    createAccount();
+      });
+  return;
+}
+
+
      showMessageDialog(context, message:'User created successfully',
      postButtonTitle: 'ok',
      postButtonAction: (){
@@ -209,7 +223,7 @@ final credential=await myAuthProvider.createUserWithEmailAndPassword(userEmailAd
       }
       hideLoading(context);
       showMessageDialog(context, message: message,postButtonTitle: 'ok');
-    } on TimeoutException catch (e){
+    } on TimeoutException {
       String message ='No internet connection';
       hideLoading(context);
       showMessageDialog(context, message: message,postButtonTitle: 'check connection');
