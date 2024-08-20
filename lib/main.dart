@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_app_c11/providers/appAuthProvider.dart';
 import 'package:to_do_app_c11/ui/home/home_screen.dart';
 import 'package:to_do_app_c11/ui/login/LoginScreen.dart';
 import 'package:to_do_app_c11/ui/register/RegisterScreen.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+   await Firebase.initializeApp(
+     name: "new-todo-app-2024",
+     options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp( ChangeNotifierProvider(
+      create:(buildContext)=>appAuthProvider(),
+      child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -13,6 +26,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    var myMainAuthProvider=Provider.of<appAuthProvider>(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
@@ -38,7 +52,7 @@ class MyApp extends StatelessWidget {
 appBarTheme: const AppBarTheme(
   backgroundColor: Colors.blue
 ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Colors.blue
         ),
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
@@ -50,7 +64,9 @@ appBarTheme: const AppBarTheme(
         RegisterScreen.routeName:(_)=>RegisterScreen(),
         LoginScreen.routeName:(_)=>LoginScreen(),
       },
-      initialRoute: LoginScreen.routeName,
+      initialRoute:
+      myMainAuthProvider.isLoggedIn()? HomeScreen.routeName:
+      LoginScreen.routeName,
     );
   }
 }
