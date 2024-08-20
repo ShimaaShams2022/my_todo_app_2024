@@ -1,29 +1,43 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:to_do_app_c11/database/collections/UsersCollection.dart';
+import 'package:to_do_app_c11/database/models/app_user.dart';
+
 
 class appAuthProvider extends ChangeNotifier{
 
-  User? firebaseUser;
+  User? authUser;
+  UsersCollection usersCollection =UsersCollection();
+  AppUser? appUser;
 
   appAuthProvider(){
-    firebaseUser=FirebaseAuth.instance.currentUser;
+    authUser=FirebaseAuth.instance.currentUser;
+    if(authUser!=null){
+      signInWithUserId(authUser!.uid);
+    }
+  }
+
+  void signInWithUserId(String uid)async{
+    appUser=await usersCollection.readUser(uid);
+    notifyListeners();
   }
 
   bool isLoggedIn(){
-    return firebaseUser!=null;
+    return authUser!=null;
   }
 
   void login(User newUser){
-    firebaseUser = newUser;
+    authUser = newUser;
   }
 
   void logout(){
-    firebaseUser = null;
+    authUser = null;
     FirebaseAuth.instance.signOut();
   }
-  Future<UserCredential> createUserWithEmailAndPassword(
+  Future<AppUser?> createUserWithEmailAndPassword(
       String email,
-      String password
+      String password,
+      String fullName,
       )async{
     UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: email,
@@ -31,10 +45,18 @@ class appAuthProvider extends ChangeNotifier{
     );
     if(credential.user!=null){
       login(credential.user!);
+       appUser= AppUser(
+        authId: credential.user?.uid,
+        fullName: fullName,
+            email:credential.user?.email,
+      );
+      var result=await usersCollection.createUser(appUser!);// check if user create or there is an error
+      return appUser!;
     }
-    return credential;
+
+    return null;
   }
-  Future<UserCredential> signInWithEmailAndPassword(
+  Future<AppUser?> signInWithEmailAndPassword(
       String email,
       String password
       )async{
@@ -45,7 +67,10 @@ class appAuthProvider extends ChangeNotifier{
 
     if(credential.user!=null){
       login(credential.user!);
+      // read user from database
+     appUser=await usersCollection.readUser(credential.user!.uid);
     }
-    return credential;
+    return appUser;
+
   }
 }
