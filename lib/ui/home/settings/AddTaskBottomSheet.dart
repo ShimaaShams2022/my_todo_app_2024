@@ -1,7 +1,15 @@
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_app_c11/AppDateUtilitis.dart';
+
+import 'package:to_do_app_c11/providers/TasksProvider.dart';
+import 'package:to_do_app_c11/providers/appAuthProvider.dart';
 import 'package:to_do_app_c11/ui/common/DateTimeField.dart';
 import 'package:to_do_app_c11/ui/common/MaterialTextFormField.dart';
 import 'package:to_do_app_c11/ui/register/Dialog_utilities.dart';
+
+import '../../../database/models/Task.dart';
 
 class AddTaskBottomSheet extends StatefulWidget {
    AddTaskBottomSheet({super.key});
@@ -49,15 +57,15 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
               children: [
                 Expanded(child: DateTimeField( title: "Task Date",
                   hint:selectedDate==null?
-                  'please select date':
-                  "${selectedDate?.day}/${selectedDate?.month}/${selectedDate?.year}",
+                  "select date":
+                  "${selectedDate?.formatDate()}",
                   onClick: () {
                     showDatePickerDialog();
                   },)),
                 Expanded(child: DateTimeField( title: "Time",
                   hint:selectedTime==null?
                   'please select time':
-                  "${selectedTime?.hour}:${selectedTime?.minute}",
+                  "${selectedTime?.formatTime()}",
                   onClick: () {
                     showTimePickerDialog();
                   },)),
@@ -97,22 +105,61 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       selectedTime=time;
     });
 
-
   }
 
-  void addTask() {
-    if(formKey.currentState?.validate()==false){return;}
+  bool isValidTask(){
+    bool isValid=true;
+    if(formKey.currentState?.validate()==false){
+      isValid=false;
+     }
 
     if(selectedDate==null){
       showMessageDialog(context, message: "please select task date",postButtonTitle:"ok");
-      return;
+      isValid=false;
     }
 
     if(selectedTime==null){
       showMessageDialog(context, message: "please select task time",postButtonTitle:"ok");
-      return;
+     isValid=false;
+    }
+    return isValid;
+  }
+
+  Future<void> addTask() async {
+
+    if(isValidTask()==false)return;
+
+    var authProvider = Provider.of<appAuthProvider>(context,listen: false);
+
+    var tasksProvider= Provider.of<TasksProvider>(context,listen: false);
+
+    var task =Task(
+        title:title.text,
+      description:description.text,
+      date:selectedDate?.dateOnly(), // ignore time
+        time:selectedTime?.timeSinceEpoch(),
+    );
+    try {
+      showLoadingDialog(context, message:"Adding task please wait");
+      var result = await tasksProvider.addTask(authProvider.appUser?.authId ?? "", task);
+      hideLoading(context);
+      showMessageDialog(context, message:"Task added successfully",postButtonTitle: "ok",postButtonAction: (){
+        Navigator.pop(context);
+      });
+    }catch(e){
+      hideLoading(context);
+      showMessageDialog(context, message: e.toString(),postButtonTitle: "ok");
     }
 
+    ///////////////////////////////////////// we can do it by another way
+    /*
+    collection.createTask(authProvider.appUser?.authId ?? "", task).then((value){
+      //success
+    }).onError((error,stackTrace){
+      //if future throw error
+    });
+   */
+    //////////////////////////////////////////////////////////////////////////////////
   }
 
 }

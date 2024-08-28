@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_app_c11/ui/FirebaseAuthCodes.dart';
+import 'package:to_do_app_c11/FirebaseAuthCodes.dart';
 import 'package:to_do_app_c11/ui/common/AppFormField.dart';
 import 'package:to_do_app_c11/ui/home/home_screen.dart';
 import 'package:to_do_app_c11/ui/login/LoginScreen.dart';

@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:to_do_app_c11/AppDateUtilitis.dart';
+import 'package:to_do_app_c11/ui/register/Dialog_utilities.dart';
 import 'package:to_do_app_c11/ui/utilities.dart';
 
+import '../../../database/models/Task.dart';
+
+
+typedef OnTaskDeleteClick =void Function(Task task);
+
 class TaskItem extends StatelessWidget {
-  const TaskItem({super.key});
+   TaskItem({required this.task,required this.onDeleteClick,super.key});
+
+  Task task;
+  OnTaskDeleteClick onDeleteClick;
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +23,18 @@ class TaskItem extends StatelessWidget {
         startActionPane: ActionPane(
           motion: DrawerMotion(),
           children: [
-            SlidableAction(onPressed: (_){},
+            SlidableAction(onPressed: (buildContext){
+              // delete
+              showMessageDialog(context, message: "Are you sure to delete this task?",
+              postButtonTitle: "confirm",
+                postButtonAction:() {
+                // delete task
+                  onDeleteClick(task);
+                },
+                negativeButtonTitle: "cancel"
+              );
+
+            },
             icon: Icons.delete,
               backgroundColor: Colors.red,
               label: 'delete',
@@ -50,7 +71,7 @@ class TaskItem extends StatelessWidget {
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Text Title',
+                    Text("${task.title}",
                     style:Theme.of(context).textTheme.titleMedium ,
                     ),
                     SizedBox(height: 8),
@@ -59,7 +80,7 @@ class TaskItem extends StatelessWidget {
                       children: [
                         Icon(Icons.watch_later_outlined),
                         SizedBox(width: 8),
-                        Text('time',
+                        Text("${task.time?.formatTime()}",
                           style:Theme.of(context).textTheme.titleSmall ,
                         ),
                       ],
@@ -87,3 +108,4 @@ class TaskItem extends StatelessWidget {
     );
   }
 }
+
