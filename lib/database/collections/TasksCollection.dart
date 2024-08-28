@@ -22,10 +22,20 @@ class TasksCollection {
 
   }
 
-   Future<List<Task>> getAllTasks(String userId) async {
-    var userQuerySnapShot=await getTasksCollection(userId).get();
+   Future<List<Task>> getAllTasks(String userId,int selectedDate) async {
+    var userQuerySnapShot=await getTasksCollection(userId)
+        .where('date',isEqualTo: selectedDate)
+    .orderBy('time',descending: false)
+        .get();
     var tasksList = userQuerySnapShot.docs.map((docSnapshot)=>docSnapshot.data()).toList();
     return tasksList;
+  }
+
+  Stream<QuerySnapshot<Task>> listenForTasks(String userId,int selectedDate)async*{
+    yield* getTasksCollection(userId)
+        .where('date',isEqualTo: selectedDate)
+        .orderBy('time',descending: false)
+        .snapshots();
   }
 
   Future<void> removeTask(String userId, Task task) {
